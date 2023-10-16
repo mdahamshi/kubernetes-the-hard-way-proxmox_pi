@@ -89,9 +89,7 @@ cat > worker-${id_instance}-csr.json <<EOF
 }
 EOF
 
-INTERNAL_IP=`ip addr show ens19 | grep 'inet ' | awk '{print $2}'`
-INTERNAL_IP=${INTERNAL_IP%/*}
-
+INTERNAL_IP=192.168.8.2${id_instance}
 cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
