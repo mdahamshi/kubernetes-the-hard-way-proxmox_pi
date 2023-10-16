@@ -6,21 +6,13 @@ In this lab you will install the command line utilities required to complete thi
 
 The `cfssl` and `cfssljson` command line utilities will be used to provision a [PKI Infrastructure](https://en.wikipedia.org/wiki/Public_key_infrastructure) and generate TLS certificates.
 
-On the **gateway-01** VM, download and install `cfssl` and `cfssljson`:
-
-```bash
-wget -q --show-progress --https-only --timestamping \
-  https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/linux/cfssl \
-  https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/linux/cfssljson
+On the **gateway-01** VM, download and install `cfssl` and `cfssljson`,
+Follow this link:
+```link
+https://github.com/cloudflare/cfssl
 ```
 
-```bash
-chmod +x cfssl cfssljson
-```
 
-```bash
-sudo mv cfssl cfssljson /usr/local/bin/
-```
 
 ### Verification
 
@@ -55,7 +47,7 @@ Runtime: go1.13
 The `kubectl` command line utility is used to interact with the Kubernetes API Server. On the **gateway-01** VM, download and install `kubectl` from the official release binaries:
 
 ```bash
-wget https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kubectl
+wget https://dl.k8s.io/v1.28.2/bin/linux/amd64/kubectl
 ```
 
 ```bash

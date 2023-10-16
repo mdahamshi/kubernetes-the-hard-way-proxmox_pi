@@ -27,11 +27,14 @@ sudo mkdir -p /etc/kubernetes/config
 Download the official Kubernetes release binaries:
 
 ```bash
-wget -q --show-progress --https-only --timestamping \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kube-apiserver" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kube-controller-manager" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kube-scheduler" \
-  "https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/amd64/kubectl"
+cat << EOF | tee list.txt
+https://dl.k8s.io/v1.28.2/bin/linux/amd64/kube-apiserver
+https://dl.k8s.io/v1.28.2/bin/linux/amd64/kube-controller-manager
+https://dl.k8s.io/v1.28.2/bin/linux/amd64/kube-scheduler
+https://dl.k8s.io/v1.28.2/bin/linux/amd64/kubectl
+EOF
+wget -q --show-progress --https-only --timestamping -i list.txt
+
 ```
 
 Install the Kubernetes binaries:
@@ -56,6 +59,11 @@ The instance internal IP address will be used to advertise the API Server to mem
 ```bash
 INTERNAL_IP=MY_NODE_INTERNAL_IP
 ```
+If you use tmux `set synchronize-panes on`:
+```bash
+INTERNAL_IP=`ip addr show ens19 | grep 'inet ' | awk '{print $2}'`
+INTERNAL_IP=${INTERNAL_IP%/*}
+```
 
 > Example for controller-0 : 192.168.8.10
 
@@ -68,35 +76,35 @@ Description=Kubernetes API Server
 Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
-ExecStart=/usr/local/bin/kube-apiserver \\
-  --advertise-address=${INTERNAL_IP} \\
-  --allow-privileged=true \\
-  --apiserver-count=3 \\
-  --audit-log-maxage=30 \\
-  --audit-log-maxbackup=3 \\
-  --audit-log-maxsize=100 \\
-  --audit-log-path=/var/log/audit.log \\
-  --authorization-mode=Node,RBAC \\
-  --bind-address=0.0.0.0 \\
-  --client-ca-file=/var/lib/kubernetes/ca.pem \\
-  --enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \\
-  --etcd-cafile=/var/lib/kubernetes/ca.pem \\
-  --etcd-certfile=/var/lib/kubernetes/kubernetes.pem \\
-  --etcd-keyfile=/var/lib/kubernetes/kubernetes-key.pem \\
-  --etcd-servers=https://192.168.8.10:2379,https://192.168.8.11:2379,https://192.168.8.12:2379 \\
-  --event-ttl=1h \\
-  --encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \\
-  --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \\
-  --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \\
-  --kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \\
-  --kubelet-https=true \\
-  --runtime-config=api/all=true \\
-  --service-account-key-file=/var/lib/kubernetes/service-account.pem \\
-  --service-cluster-ip-range=10.32.0.0/24 \\
-  --service-node-port-range=30000-32767 \\
-  --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \\
-  --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \\
+ExecStart=/usr/local/bin/kube-apiserver \
+  --advertise-address=${INTERNAL_IP} \
+  --allow-privileged=true \
+  --audit-log-maxage=30 \
+  --audit-log-maxbackup=3 \
+  --audit-log-maxsize=100 \
+  --audit-log-path=/var/log/audit.log \
+  --authorization-mode=Node,RBAC \
+  --client-ca-file=/var/lib/kubernetes/ca.pem \
+  --enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
+  --etcd-cafile=/var/lib/kubernetes/ca.pem \
+  --etcd-certfile=/var/lib/kubernetes/kubernetes.pem \
+  --etcd-keyfile=/var/lib/kubernetes/kubernetes-key.pem \
+  --etcd-servers=https://192.168.8.10:2379,https://192.168.8.11:2379,https://192.168.8.12:2379 \
+  --event-ttl=1h \
+  --encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \
+  --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \
+  --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \
+  --kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \
+  --runtime-config=api/all=true \
+  --service-account-issuer=https://kubernetes.default.svc.cluster.local \
+  --service-account-key-file=/var/lib/kubernetes/service-account.pem \
+  --service-account-signing-key-file=/var/lib/kubernetes/service-account-key.pem \
+  --service-cluster-ip-range=10.32.0.0/24 \
+  --service-node-port-range=30000-32767 \
+  --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \
+  --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \
   --v=2
+
 Restart=on-failure
 RestartSec=5
 
@@ -123,7 +131,6 @@ Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
 ExecStart=/usr/local/bin/kube-controller-manager \\
-  --address=0.0.0.0 \\
   --cluster-cidr=10.200.0.0/16 \\
   --cluster-name=kubernetes \\
   --cluster-signing-cert-file=/var/lib/kubernetes/ca.pem \\
@@ -155,7 +162,7 @@ Create the `kube-scheduler.yaml` configuration file:
 
 ```bash
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: kubescheduler.config.k8s.io/v1alpha1
+apiVersion: kubescheduler.config.k8s.io/v1
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
@@ -189,7 +196,7 @@ EOF
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable kube-apiserver kube-controller-manager kube-scheduler
-sudo systemctl start kube-apiserver kube-controller-manager kube-scheduler
+sudo systemctl restart kube-apiserver kube-controller-manager kube-scheduler
 ```
 
 > Allow up to 10 seconds for the Kubernetes API Server to fully initialize.
@@ -243,7 +250,7 @@ Create the `system:kube-apiserver-to-kubelet` [ClusterRole](https://kubernetes.i
 
 ```bash
 cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   annotations:
@@ -271,7 +278,7 @@ Bind the `system:kube-apiserver-to-kubelet` ClusterRole to the `kubernetes` user
 
 ```bash
 cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: system:kube-apiserver
@@ -297,7 +304,7 @@ Install the Nginx Load Balancer:
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y nginx
+sudo apt-get install -y nginx libnginx-mod-stream
 ```
 
 As **root** user, Create the Nginx load balancer network configuration:
@@ -337,6 +344,9 @@ Define the static public IP address (replace MY_PUBLIC_IP_ADDRESS with your publ
 
 ```bash
 KUBERNETES_PUBLIC_ADDRESS=MY_PUBLIC_IP_ADDRESS
+OR
+EXTERNAL_IP=`ip addr show ens18 | grep 'inet ' | awk '{print $2}'`
+KUBERNETES_PUBLIC_ADDRESS=${EXTERNAL_IP%/*}
 ```
 
 Make a HTTP request for the Kubernetes version info:
@@ -350,12 +360,12 @@ curl --cacert ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}:6443/version
 ```bash
 {
   "major": "1",
-  "minor": "18",
-  "gitVersion": "v1.18.4",
-  "gitCommit": "c96aede7b5205121079932896c4ad89bb93260af",
+  "minor": "28",
+  "gitVersion": "v1.28.2",
+  "gitCommit": "89a4ea3e1e4ddd7f7572286090359983e0387b2f",
   "gitTreeState": "clean",
-  "buildDate": "2020-06-17T11:33:59Z",
-  "goVersion": "go1.13.9",
+  "buildDate": "2023-09-13T09:29:07Z",
+  "goVersion": "go1.20.8",
   "compiler": "gc",
   "platform": "linux/amd64"
 }

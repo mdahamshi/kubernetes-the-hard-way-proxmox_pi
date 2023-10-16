@@ -22,14 +22,15 @@ Download the official etcd release binaries from the [etcd](https://github.com/e
 
 ```bash
 wget -q --show-progress --https-only --timestamping \
-  "https://github.com/etcd-io/etcd/releases/download/v3.4.9/etcd-v3.4.9-linux-amd64.tar.gz"
+  "https://storage.googleapis.com/etcd/v3.5.9/etcd-v3.5.9-linux-amd64.tar.gz"
+  
 ```
 
 Extract and install the `etcd` server and the `etcdctl` command line utility:
 
 ```bash
-tar -xvf etcd-v3.4.9-linux-amd64.tar.gz
-sudo mv etcd-v3.4.9-linux-amd64/etcd* /usr/local/bin/
+tar -xvf etcd-v3.5.9-linux-amd64.tar.gz
+sudo mv etcd-v3.5.9-linux-amd64/etcd* /usr/local/bin/
 ```
 
 ### Configure the etcd Server
@@ -44,7 +45,11 @@ The instance internal IP address will be used to serve client requests and commu
 ```bash
 INTERNAL_IP=MY_NODE_INTERNAL_IP
 ```
-
+If you use tmux `set synchronize-panes on`:
+```bash
+INTERNAL_IP=`ip addr show ens19 | grep 'inet ' | awk '{print $2}'`
+INTERNAL_IP=${INTERNAL_IP%/*}
+```
 > Example for controller-0 : 192.168.8.10
 
 Each etcd member must have a unique name within an etcd cluster. Set the etcd name to match the hostname of the current compute instance:

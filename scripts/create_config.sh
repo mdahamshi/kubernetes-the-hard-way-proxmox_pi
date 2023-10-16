@@ -1,34 +1,7 @@
-# Generating Kubernetes Configuration Files for Authentication
+#!/usr/bin/env bash
+#
+#
 
-In this lab you will generate [Kubernetes configuration files](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/), also known as kubeconfigs, which enable Kubernetes clients to locate and authenticate to the Kubernetes API Servers.
-
-## Client Authentication Configs
-
-In this section you will generate kubeconfig files for the `controller manager`, `kubelet`, `kube-proxy`, and `scheduler` clients and the `admin` user.
-
-### Kubernetes Public IP Address
-
-Each kubeconfig requires a Kubernetes API Server to connect to. To support high availability the IP address assigned to the external load balancer fronting the Kubernetes API Servers will be used.
-
-Define the static public IP address (you need to replace YOUR_EXTERNAL_IP by your external IP address):
-
-```bash
-KUBERNETES_PUBLIC_ADDRESS=YOUR_EXTERNAL_IP
-OR
-EXTERNAL_IP=`ip addr show ens18 | grep 'inet ' | awk '{print $2}'`
-EXTERNAL_IP=${EXTERNAL_IP%/*}
-KUBERNETES_PUBLIC_ADDRESS=$EXTERNAL_IP
-```
-
-### The kubelet Kubernetes Configuration File
-
-When generating kubeconfig files for Kubelets the client certificate matching the Kubelet's node name must be used. This will ensure Kubelets are properly authorized by the Kubernetes [Node Authorizer](https://kubernetes.io/docs/admin/authorization/node/).
-
-> The following commands must be run in the same directory used to generate the SSL certificates during the [Generating TLS Certificates](04-certificate-authority.md) lab.
-
-Generate a kubeconfig file for each worker node:
-
-```bash
 for instance in worker-0 worker-1 worker-2; do
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.pem \
@@ -49,21 +22,7 @@ for instance in worker-0 worker-1 worker-2; do
 
   kubectl config use-context default --kubeconfig=${instance}.kubeconfig
 done
-```
 
-Results:
-
-```bash
-worker-0.kubeconfig
-worker-1.kubeconfig
-worker-2.kubeconfig
-```
-
-### The kube-proxy Kubernetes Configuration File
-
-Generate a kubeconfig file for the `kube-proxy` service:
-
-```bash
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=ca.pem \
   --embed-certs=true \
@@ -82,19 +41,8 @@ kubectl config set-context default \
   --kubeconfig=kube-proxy.kubeconfig
 
 kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
-```
 
-Results:
 
-```bash
-kube-proxy.kubeconfig
-```
-
-### The kube-controller-manager Kubernetes Configuration File
-
-Generate a kubeconfig file for the `kube-controller-manager` service:
-
-```bash
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=ca.pem \
   --embed-certs=true \
@@ -113,19 +61,8 @@ kubectl config set-context default \
   --kubeconfig=kube-controller-manager.kubeconfig
 
 kubectl config use-context default --kubeconfig=kube-controller-manager.kubeconfig
-```
 
-Results:
 
-```bash
-kube-controller-manager.kubeconfig
-```
-
-### The kube-scheduler Kubernetes Configuration File
-
-Generate a kubeconfig file for the `kube-scheduler` service:
-
-```bash
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=ca.pem \
   --embed-certs=true \
@@ -144,19 +81,7 @@ kubectl config set-context default \
   --kubeconfig=kube-scheduler.kubeconfig
 
 kubectl config use-context default --kubeconfig=kube-scheduler.kubeconfig
-```
 
-Results:
-
-```bash
-kube-scheduler.kubeconfig
-```
-
-### The admin Kubernetes Configuration File
-
-Generate a kubeconfig file for the `admin` user:
-
-```bash
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=ca.pem \
   --embed-certs=true \
@@ -175,30 +100,12 @@ kubectl config set-context default \
   --kubeconfig=admin.kubeconfig
 
 kubectl config use-context default --kubeconfig=admin.kubeconfig
-```
 
-Results:
-
-```bash
-admin.kubeconfig
-```
-
-## Distribute the Kubernetes Configuration Files
-
-Copy the appropriate `kubelet` and `kube-proxy` kubeconfig files to each worker instance:
-
-```bash
 for instance in worker-0 worker-1 worker-2; do
   scp ${instance}.kubeconfig kube-proxy.kubeconfig root@${instance}:~/
 done
-```
 
-Copy the appropriate `kube-controller-manager` and `kube-scheduler` kubeconfig files to each controller instance:
-
-```bash
 for instance in controller-0 controller-1 controller-2; do
   scp admin.kubeconfig kube-controller-manager.kubeconfig kube-scheduler.kubeconfig root@${instance}:~/
 done
-```
-
-Next: [Generating the Data Encryption Config and Key](06-data-encryption-keys.md)
+echo done !
