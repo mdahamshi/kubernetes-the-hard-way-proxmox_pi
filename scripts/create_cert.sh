@@ -240,9 +240,9 @@ cfssl gencert \
   -profile=kubernetes \
   service-account-csr.json | cfssljson -bare service-account
 
-for id_instance in 0 1 2; do
-  echo "copying ca.pem worker-${id_instance}-key.pem worker-${id_instance}.pem to worker-${id_instance} "
-  scp ca.pem worker-${id_instance}-key.pem worker-${id_instance}.pem root@worker-${id_instance}:~/
+for instance in worker-0 worker-1 worker-2; do
+  echo "copying ca.pem worker-${instance}-key.pem worker-${instance}.pem to worker-${instance} "
+  scp ca.pem ${instance}-key.pem ${instance}.pem root@${instance}:~/
 done
 
 for instance in controller-0 controller-1 controller-2; do

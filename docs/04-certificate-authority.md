@@ -367,8 +367,8 @@ service-account.pem
 Copy the appropriate certificates and private keys to each worker instance:
 
 ```bash
-for id_instance in 0 1 2; do
-  scp ca.pem worker-${id_instance}-key.pem worker-${id_instance}.pem root@worker-${id_instance}:~/
+for instance in worker-0 worker-1 worker-2; do
+  scp ca.pem ${instance}-key.pem ${instance}.pem root@${instance}:~/
 done
 ```
 
