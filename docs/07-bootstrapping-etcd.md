@@ -99,7 +99,7 @@ EOF
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable etcd
-sudo systemctl start etcd
+sudo systemctl restart etcd
 ```
 
 > Remember to run the above commands on each controller node: `controller-0`, `controller-1`, and `controller-2`.

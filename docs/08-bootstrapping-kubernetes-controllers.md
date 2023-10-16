@@ -223,11 +223,16 @@ curl -kH "Host: kubernetes.default.svc.cluster.local" -i https://127.0.0.1:6443/
 ```
 
 ```bash
-HTTP/2 200
+HTTP/2 200 
+audit-id: 5e33f38f-4007-4b10-b922-7cbbeac544fc
+cache-control: no-cache, private
 content-type: text/plain; charset=utf-8
 x-content-type-options: nosniff
+x-kubernetes-pf-flowschema-uid: 6267aff3-7ea9-4637-9064-66448ad1cb7e
+x-kubernetes-pf-prioritylevel-uid: 283c993c-997b-4f14-bb0c-bd8f2340f807
 content-length: 2
-date: Wed, 24 Jun 2020 12:24:52 GMT
+date: Mon, 16 Oct 2023 17:40:37 GMT
+
 
 ok
 ```

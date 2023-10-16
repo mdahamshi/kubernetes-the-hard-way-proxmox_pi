@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
 #
+EXTERNAL_IP=`ip addr show ens18 | grep 'inet ' | awk '{print $2}'`
+EXTERNAL_IP=${EXTERNAL_IP%/*}
+KUBERNETES_PUBLIC_ADDRESS=$EXTERNAL_IP
 
 for instance in worker-0 worker-1 worker-2; do
   kubectl config set-cluster kubernetes-the-hard-way \

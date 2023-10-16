@@ -280,7 +280,7 @@ EOF
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable containerd kubelet kube-proxy
-sudo systemctl start containerd kubelet kube-proxy
+sudo systemctl restart containerd kubelet kube-proxy
 ```
 
 > Remember to run the above commands on each worker node: `worker-0`, `worker-1`, and `worker-2`.
@@ -297,9 +297,9 @@ ssh root@controller-0 kubectl get nodes --kubeconfig admin.kubeconfig
 
 ```bash
 NAME       STATUS   ROLES    AGE   VERSION
-worker-0   Ready    <none>   15s   v1.18.4
-worker-1   Ready    <none>   15s   v1.18.4
-worker-2   Ready    <none>   15s   v1.18.4
+worker-0   Ready    <none>   24s   v1.28.2
+worker-1   Ready    <none>   24s   v1.28.2
+worker-2   Ready    <none>   24s   v1.28.2
 ```
 
 Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)
